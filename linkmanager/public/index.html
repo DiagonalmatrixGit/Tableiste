@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Meine Link-Sammlung</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f5f5f5;
+    }
+    #link-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 600px;
+    }
+    .link-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #fff;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.05);
+    }
+    .link-box:hover {
+      background-color: #f0f0f0;
+    }
+    .favicon {
+      width: 24px;
+      height: 24px;
+    }
+    .editable {
+      outline: none;
+      font-size: 16px;
+      flex-grow: 1;
+    }
+    #add-button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      background-color: #0077cc;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #add-button:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Meine Link-Sammlung</h2>
+<div id="link-container"></div>
+<button id="add-button">+ Link hinzufügen</button>
+
+<script>
+  const container = document.getElementById('link-container');
+  const addButton = document.getElementById('add-button');
+
+  function createLinkBox(url, title) {
+    const domain = (new URL(url)).hostname;
+    const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+    const box = document.createElement('div');
+    box.className = 'link-box';
+    box.dataset.url = url;
+
+    const img = document.createElement('img');
+    img.className = 'favicon';
+    img.src = faviconUrl;
+    img.alt = 'Favicon';
+
+    const editable = document.createElement('div');
+    editable.className = 'editable';
+    editable.contentEditable = true;
+    editable.textContent = title;
+
+    box.appendChild(img);
+    box.appendChild(editable);
+
+    box.addEventListener('click', e => {
+      if (e.target.isContentEditable) return;
+      window.open(box.dataset.url, '_blank');
+    });
+
+    container.appendChild(box);
+  }
+
+  // Links vom Server laden
+  fetch('/links')
+    .then(res => res.json())
+    .then(data => data.forEach(link => createLinkBox(link.url, link.title)))
+    .catch(err => console.error('Fehler beim Laden:', err));
+
+  addButton.addEventListener('click', () => {
+    const url = prompt("Gib die URL ein (inkl. https://):");
+    if (!url) return;
+    let title = prompt("Gib einen Titel ein:");
+    if (!title) title = url;
+
+    try {
+      new URL(url);
+    } catch {
+      alert("Ungültige URL");
+      return;
+    }
+
+    // Server POST
+    fetch('/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, title })
+    })
+    .then(res => res.json())
+    .then(data => createLinkBox(data.url, data.title))
+    .catch(err => console.error('Fehler beim Speichern:', err));
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Link-Box mit Favicon</title>
+  <style>
+    .link-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #f9f9f9;
+      max-width: 400px;
+      margin: 10px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .link-box:hover {
+      background-color: #eaeaea;
+    }
+
+    .favicon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .editable {
+      outline: none;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="link-box" data-url="https://openai.com">
+  <img class="favicon" src="https://www.google.com/s2/favicons?sz=64&domain=openai.com" alt="Favicon">
+  <div class="editable" contenteditable="true">OpenAI</div>
+</div>
+
+<script>
+  document.querySelectorAll('.link-box').forEach(box => {
+    box.addEventListener('click', (e) => {
+      // Verhindere Klick, wenn gerade der Text bearbeitet wird
+      if (e.target.isContentEditable) return;
+
+      const url = box.dataset.url;
+      window.open(url, '_blank'); // in neuem Tab öffnen
+    });
+  });
+</script>
+
+</body>
+</html>

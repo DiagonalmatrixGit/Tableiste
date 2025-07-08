@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Link-Sammlung</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f5f5f5;
+    }
+
+    #link-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 600px;
+    }
+
+    .link-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #fff;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.05);
+    }
+
+    .link-box:hover {
+      background-color: #f0f0f0;
+    }
+
+    .favicon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .editable {
+      outline: none;
+      font-size: 16px;
+      flex-grow: 1;
+    }
+
+    #add-button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      background-color: #0077cc;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #add-button:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Meine Link-Sammlung</h2>
+
+<div id="link-container">
+  <!-- Link-Boxen erscheinen hier -->
+</div>
+
+<button id="add-button">+ Link hinzufügen</button>
+
+<script>
+
+  // Schlüssel für den lokalen Speicher
+const STORAGE_KEY = 'meineLinkListe';
+
+// Laden beim Start
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const links = JSON.parse(saved);
+    links.forEach(link => createLinkBox(link.url, link.title));
+  }
+});
+
+// Speichern nach jedem Hinzufügen
+function saveLinks() {
+  const boxes = document.querySelectorAll('.link-box');
+  const links = Array.from(boxes).map(box => ({
+    url: box.dataset.url,
+    title: box.querySelector('.editable').textContent
+  }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+}
+
+
+
+
+  const container = document.getElementById('link-container');
+  const addButton = document.getElementById('add-button');
+
+  function createLinkBox(url = 'https://openai.com', title = 'OpenAI') {
+    const domain = (new URL(url)).hostname;
+    const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+
+    const box = document.createElement('div');
+    box.className = 'link-box';
+    box.dataset.url = url;
+
+    const img = document.createElement('img');
+    img.className = 'favicon';
+    img.src = faviconUrl;
+    img.alt = 'Favicon';
+
+    const editable = document.createElement('div');
+    editable.className = 'editable';
+    editable.contentEditable = true;
+    editable.textContent = title;
+
+    box.appendChild(img);
+    box.appendChild(editable);
+
+    box.addEventListener('click', e => {
+      if (e.target.isContentEditable) return;
+      window.open(box.dataset.url, '_blank');
+    });
+
+    container.appendChild(box);
+  }
+
+  // Beispiel-Link laden
+  createLinkBox();
+
+  addButton.addEventListener('click', () => {
+    const url = prompt("Gib die URL ein (inkl. https://):");
+    if (!url) return;
+    let title = prompt("Gib einen Titel für den Link ein:");
+    if (!title) title = url;
+
+    try {
+      new URL(url); // einfache Gültigkeitsprüfung
+      createLinkBox(url, title);
+    } catch (err) {
+      alert("Ungültige URL");
+    }
+  });
+</script>
+
+</body>
+</html>
